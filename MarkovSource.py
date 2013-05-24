@@ -6,8 +6,8 @@ import itertools
 import collections
 import numpy as np
 
-def weighted_choice(choices, weight):
-    cum = np.add.accumulate(weight)
+def weighted_choice(choices, weights):
+    cum = np.add.accumulate(weights)
     rand = random.random() * cum[-1]
     return choices[bisect.bisect(cum, rand)]
 
