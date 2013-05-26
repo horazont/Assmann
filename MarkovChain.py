@@ -4,7 +4,12 @@ import bisect
 import random
 import itertools
 import collections
+import copy
+
 import numpy as np
+
+from Graph import DirectedWeightedGraph
+from Graph import DirectedWeightedEdge
 
 def weighted_choice(choices, weights):
     cum = np.add.accumulate(weights)
@@ -17,42 +22,52 @@ class CharacterSet(list):
         return type(self)(itertools.product(self, repeat=other))
 
 
-def shift_append(S, c):
-     S.pop()
-     S.append(c)
-     S.rotate(1)
-     return S
-
 class MarkovChain:
     """A Markov source of order n.
     """
 
-    def __init__(self, xs, markov_mat, init_probs, order, debug=False):
-        self.alphabet = xs
+    def __init__(self, order, debug=False):
         self.order = order
-        self.states = collections.deque(
-                      CharacterSet(self.alphabet)**self.order)
-        self.markov_mat = np.array(markov_mat)
-        self.init_probs = np.array(init_probs)
-
         self.time = 0
+        self.states = DirectedWeightedGraph()
+        self.state = None
 
-        if not self._valid_markov_matrix(markov_mat):
-            raise TypeError("Invalid markov matrix supplied")
-
-        self.markov_mat = markov_mat
-        self.cur_state = collections.deque(['' for i in range(order)])
+    def set_random_state(self):
+        self.state = random.choice(self.states.V)
 
     def emit(self):
-
-        
+        self.time += 1
         yield out
 
-    def add(self):
-        pass
+    def add_transition(self, src, dst):
+        """Add a state transition into the state graph.
 
-    def build(self):
-        pass
+        This will add edges with weight 1 or increase the weight if the edge
+        already exists.
+        """
+        self.states.add_vertex(src)
+        self.states.add_vertex(dst)
+
+        existing = self.states.find_edge(src, dst)
+        if existing is None:
+            self.states.add_edge(DirectedWeightedEdge(src, dst, 1))
+        else:
+            existing.weight += 1
+        
+    def learn(self, source):
+        """Build a markov model from an iterable input source.
+        """
+        state = collections.deque()
+        for i in source:
+            newstate = copy.deepcopy(state)
+
+            if len(state) == self.order:
+                newstate.popleft()
+
+            newstate.append(i)
+
+            self.add_transition(tuple(state), tuple(newstate))
+            state = newstate
 
     def _valid_markov_matrix(self, mat):
         if not isinstance(np.ndarray, mat):
