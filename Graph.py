@@ -11,7 +11,7 @@ class DirectedWeightedEdge:
 
     # maintain hashability
     def __hash__(self):
-        return super().__hash__()
+        return hash(self.dst) ^ hash(self.src)
 
     def __str__(self):
         return '({}, {}, {})'.format(repr(self.src), repr(self.dst), 
@@ -56,6 +56,23 @@ class DirectedWeightedGraph:
 
     def get_edges_at(self, v):
         return filter(lambda vv: vv.src == v, self.E)
+
+    def adjacency_matrix(self, index_map):
+        """Build the adjacency matrix representing the graph.
+
+        Since vertices can be any kind of object, an index map must be
+        supplied, mapping vertices to matrix indeces (integers, starting at 0).
+        """
+
+        import numpy
+
+        n = len(self.V)
+        mat = numpy.zeros((n, n))
+        for v in sorted(self.V):
+            for e in self.get_edges_at(v):
+                mat[index_map[v],index_map[e.dst]] = e.weight
+
+        return mat
 
     def __str__(self):
         return '{}(V = {}, E = {})'.format(type(self).__name__, str(self.V),
