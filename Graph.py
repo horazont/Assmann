@@ -57,6 +57,13 @@ class DirectedWeightedGraph:
     def get_edges_at(self, v):
         return filter(lambda vv: vv.src == v, self.E)
 
+    def find_edge(self, src, dst):
+        try:
+            return next(filter(lambda e: e.src == src and
+                               e.dst == dst, self.E))
+        except StopIteration:
+            return None
+
     def adjacency_matrix(self, index_map):
         """Build the adjacency matrix representing the graph.
 
