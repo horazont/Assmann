@@ -1,19 +1,10 @@
 #!/usr/bin/python3
 
-import numpy as np
+import MarkovChain
 
-from MarkovSource import MarkovSource
-
-ALPH = [' '] + [chr(i) for i in range(ord('a'), ord('d')+1)]
-ALPH = ['a', 'b', 'c']
-N = len(ALPH)
-
-ps = np.loadtxt('ps.txt')
-
-init_state = np.zeros(N)
-init_state[0] = 1
-np.savetxt('init_state.txt', init_state)
-
-source = MarkovSource(ALPH, init_state, ps, 1)
-for i in range(30):
-    print(next(source.emit()), end='')
+chain = MarkovChain.MarkovChain(2)
+chain.learn('choochoooshoe')
+print(chain.states)
+print()
+for v in chain.states.V:
+    print(v, list(chain.states.get_edges_at(v)))
