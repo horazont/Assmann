@@ -30,14 +30,27 @@ class MarkovChain:
         self.order = order
         self.time = 0
         self.states = DirectedWeightedGraph()
-        self.state = None
+        self.state = ()
+        self.learn_state = ()
 
     def set_random_state(self):
         self.state = random.choice(self.states.V)
 
-    def emit(self):
+    def next_state(self):
         self.time += 1
-        yield out
+        cands = list(self.states.get_edges_at(self.state))
+        if len(cands) > 0:
+            self.state = weighted_choice(cands, [c.weight for c in cands]).dst
+        else:
+            self.state = None
+
+    def emit(self):
+        self.next_state()
+
+        if self.state is None:
+            raise StopIteration
+
+        yield self.state[-1]
 
     def add_transition(self, src, dst):
         """Add a state transition into the state graph.
@@ -57,7 +70,7 @@ class MarkovChain:
     def learn(self, source):
         """Build a markov model from an iterable input source.
         """
-        state = collections.deque()
+        state = collections.deque(self.learn_state)
         for i in source:
             newstate = copy.deepcopy(state)
 
@@ -66,17 +79,9 @@ class MarkovChain:
 
             newstate.append(i)
 
+            # FIXME how to handle the start case?
             self.add_transition(tuple(state), tuple(newstate))
             state = newstate
 
-    def _valid_markov_matrix(self, mat):
-        if not isinstance(np.ndarray, mat):
-            return False
-
-        if mat.shape[0] != mat.shape[1]:
-            return False
-
-    def _debug(self, msg):
-        if self.debug:
-            print(msg)
+        self.learn_state = tuple(state)
 
