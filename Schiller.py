@@ -19,8 +19,7 @@ except OSError:
     def source():
         with open('1._Akt') as f:
             for line in f:
-                for char in line:
-                    yield char
+                yield from line
 
     print("Learning.")
     chain = MarkovChain.MarkovChain(order)
