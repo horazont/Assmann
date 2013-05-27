@@ -40,7 +40,7 @@ class MarkovChain:
         cands = list(self.states.get_edges_at(self.state))
         if len(cands) > 0:
             edge = weighted_choice(cands, [c[1] for c in cands])
-            (_, self.state), _ = edge
+            self.state, _ = edge
         else:
             self.state = None
 

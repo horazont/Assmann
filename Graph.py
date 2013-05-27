@@ -3,7 +3,11 @@
 class DirectedWeightedGraph:
     def __init__(self, V=set(), E=dict()):
         self.V = set(V)
-        self.E = dict(E)
+        # extra cast here to allow input such as
+        #    [((src, dst), weight), ...]
+        self.E = dict()
+        for (src, dst), weight in dict(E).items():
+            self.add_edge(src, dst, weight)
 
     def add_vertex(self, v):
         self.V.add(v)
@@ -23,23 +27,28 @@ class DirectedWeightedGraph:
             self.add_vertex(arg)
 
     def add_edge(self, src, dst, weight):
-        k = src, dst
-        if k in self.E:
-            self.E[k] += weight
+        src_dict = self.E.setdefault(src, dict())
+        if dst in src_dict:
+            src_dict[dst] += weight
         else:
-            self.E[k] = weight
+            src_dict[dst] = weight
 
     def add_edges(self, *args):
         collections.deque(map(self.add_edge, args), 0)
 
     def del_edge(self, src, dst):
-        del self.E[(src, dst)]
+        src_dict = self.E.setdefault(src, dict())
+        try:
+            del src_dict[dst]
+        finally:
+            if not src_dict:
+                del self.E[src]
 
     def get_edges_at(self, v):
-        return filter(lambda edge: edge[0][0] == v, self.E.items())
+        return self.E.get(v, dict()).items()
 
     def get_weight(self, src, dst):
-        return self.E.get((src, dst), None)
+        return self.E.get(src, dict()).get(dst, None)
 
     def adjacency_matrix(self, index_map):
         """Build the adjacency matrix representing the graph.
@@ -53,7 +62,7 @@ class DirectedWeightedGraph:
         n = len(self.V)
         mat = numpy.zeros((n, n))
         for v in sorted(self.V):
-            for (src, dst), weight in self.get_edges_at(v):
+            for dst, weight in self.get_edges_at(v):
                 mat[index_map[v],index_map[dst]] = weight
 
         return mat
