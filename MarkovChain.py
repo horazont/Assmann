@@ -66,22 +66,21 @@ class MarkovChain:
             self.states.add_edge(DirectedWeightedEdge(src, dst, 1))
         else:
             existing.weight += 1
-        
+
     def learn(self, source):
         """Build a markov model from an iterable input source.
         """
         state = collections.deque(self.learn_state)
         for i in source:
-            newstate = copy.deepcopy(state)
+            oldstate = tuple(state)
 
-            if len(state) == self.order:
-                newstate.popleft()
+            if len(oldstate) == self.order:
+                state.popleft()
 
-            newstate.append(i)
+            state.append(i)
 
             # FIXME how to handle the start case?
-            self.add_transition(tuple(state), tuple(newstate))
-            state = newstate
+            self.add_transition(oldstate, tuple(state))
 
         self.learn_state = tuple(state)
 
