@@ -7,9 +7,10 @@ import MarkovChain
 
 print("Ich bin nicht Schiller!")
 
-order = sys.argv[1]
-chars = sys.argv[2]
-dumpname = 'schiller-{}.chain'.format(order)
+infile = sys.argv[1]
+order = sys.argv[2]
+chars = sys.argv[3]
+dumpname = '{}-{}.chain'.format(infile,order)
 
 try:
     with open(dumpname, 'rb') as f:
@@ -17,7 +18,7 @@ try:
         print("Reading from {}".format(dumpname))
 except OSError:
     def source():
-        with open('1._Akt') as f:
+        with open(infile) as f:
             for line in f:
                 yield from line
 
