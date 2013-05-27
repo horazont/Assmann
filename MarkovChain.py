@@ -9,7 +9,6 @@ import copy
 import numpy as np
 
 from Graph import DirectedWeightedGraph
-from Graph import DirectedWeightedEdge
 
 def weighted_choice(choices, weights):
     cum = np.add.accumulate(weights)
@@ -40,7 +39,8 @@ class MarkovChain:
         self.time += 1
         cands = list(self.states.get_edges_at(self.state))
         if len(cands) > 0:
-            self.state = weighted_choice(cands, [c.weight for c in cands]).dst
+            edge = weighted_choice(cands, [c[1] for c in cands])
+            (_, self.state), _ = edge
         else:
             self.state = None
 
@@ -60,12 +60,7 @@ class MarkovChain:
         """
         self.states.add_vertex(src)
         self.states.add_vertex(dst)
-
-        existing = self.states.find_edge(src, dst)
-        if existing is None:
-            self.states.add_edge(DirectedWeightedEdge(src, dst, 1))
-        else:
-            existing.weight += 1
+        self.states.add_edge(src, dst, 1)
 
     def learn(self, source):
         """Build a markov model from an iterable input source.
