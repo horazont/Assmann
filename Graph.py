@@ -1,68 +1,42 @@
 #!/usr/bin/python3
 
-class DirectedWeightedEdge:
-    def __init__(self, src, dst, weight):
-        self.src = src
-        self.dst = dst
-        self.weight = weight
-
-    def __eq__(self, other):
-        return self.dst == other.dst and self.src == other.src
-
-    # maintain hashability
-    def __hash__(self):
-        return hash(self.dst) ^ hash(self.src)
-
-    def __str__(self):
-        return '({}, {}, {})'.format(repr(self.src), repr(self.dst), 
-                                     repr(self.weight))
-
-    def __repr__(self):
-        return '{}({}, {}, {})'.format(type(self).__name__, repr(self.src),
-                                       repr(self.dst), repr(self.weight))
-
 class DirectedWeightedGraph:
-    def __init__(self, **kwargs):
-        if 'V' not in kwargs and 'E' not in kwargs:
-            self.V = set()
-            self.E = set()
-        else:
-            try:
-                self.V = kwargs['V']
-                self.E = kwargs['E']
-            except KeyError:
-                ValueError("Both V and E arguments must be supplied")
+    def __init__(self, V=set(), E=dict()):
+        self.V = set(V)
+        self.E = dict(E)
 
     def add_vertex(self, v):
         self.V.add(v)
 
     def del_vertex(self, v):
         self.V.remove(v)
-        self.E -= set(filter(lambda e: e.dst == v or e.src == v, self.E))
+        for k in self.E.keys():
+            (src, dst) = k
+            if src == v or dst == v:
+                del self.E[k]
 
     def add_vertices(self, *args):
         for arg in args:
             self.add_vertex(arg)
 
-    def add_edge(self, e):
-        self.E.add(e)
+    def add_edge(self, src, dst, weight):
+        k = src, dst
+        if k in self.E:
+            self.E[k] += weight
+        else:
+            self.E[k] = weight
 
     def add_edges(self, *args):
-        for arg in args:
-            self.add_edge(arg)
+        collections.deque(map(self.add_edge, args), 0)
 
-    def del_edge(self, e):
-        self.E.remove(e)
+    def del_edge(self, src, dst):
+        del self.E[(src, dst)]
 
     def get_edges_at(self, v):
-        return filter(lambda vv: vv.src == v, self.E)
+        return filter(lambda edge: edge[0][0] == v, self.E.items())
 
-    def find_edge(self, src, dst):
-        try:
-            return next(filter(lambda e: e.src == src and
-                               e.dst == dst, self.E))
-        except StopIteration:
-            return None
+    def get_weight(self, src, dst):
+        return self.E.get((src, dst), None)
 
     def adjacency_matrix(self, index_map):
         """Build the adjacency matrix representing the graph.
@@ -76,8 +50,8 @@ class DirectedWeightedGraph:
         n = len(self.V)
         mat = numpy.zeros((n, n))
         for v in sorted(self.V):
-            for e in self.get_edges_at(v):
-                mat[index_map[v],index_map[e.dst]] = e.weight
+            for (src, dst), weight in self.get_edges_at(v):
+                mat[index_map[v],index_map[dst]] = weight
 
         return mat
 
