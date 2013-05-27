@@ -27,7 +27,7 @@ class MarkovChain:
     """
 
     def __init__(self, order, debug=False):
-        self.order = order
+        self.order = int(order)
         self.time = 0
         self.states = DirectedWeightedGraph()
         self.state = ()
