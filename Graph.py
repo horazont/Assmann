@@ -10,7 +10,10 @@ class DirectedWeightedGraph:
 
     def del_vertex(self, v):
         self.V.remove(v)
-        for k in self.E.keys():
+	# copy the key view to a list, otherwise
+	# modifying the dict during the iteration
+	# would RuntimeError
+        for k in list(self.E.keys()):
             (src, dst) = k
             if src == v or dst == v:
                 del self.E[k]
