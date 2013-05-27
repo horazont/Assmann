@@ -2,9 +2,13 @@
 
 import MarkovChain
 
-chain = MarkovChain.MarkovChain(2)
+chain = MarkovChain.MarkovChain(8)
 chain.learn('choochoooshoe')
-print(chain.states)
+print("Done with learning.")
+for i in range(20):
+    try:
+        print(next(chain.emit()), end='')
+    except StopIteration:
+        break
+
 print()
-for v in chain.states.V:
-    print(v, list(chain.states.get_edges_at(v)))
