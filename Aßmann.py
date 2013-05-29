@@ -33,7 +33,8 @@ class LearnWords:
 
     @staticmethod
     def filter_fold_whitespace(x):
-        return x.replace("\t", " ").replace("\n", " ")
+        x = x.replace("\t", " ").replace("\n", " ").strip()
+        return x if x else " "
 
     @staticmethod
     def filter_pass(x):
