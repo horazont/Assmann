@@ -74,7 +74,49 @@ class Produce:
             pass
         print()
 
+class Merge:
+    @staticmethod
+    def open_chain(filename):
+        return open(filename, "rb"), filename
 
+    @staticmethod
+    def load_chain(f):
+        try:
+            return pickle.load(f)
+        finally:
+            f.close()
+
+    def __init__(self, args):
+        # first open all chains to make sure they exist and are
+        # readable
+        self._chains = list(map(self.open_chain, args.chains))
+        self._outfile = args.outfile
+
+    def __call__(self):
+        with open(self._outfile, "wb") as outf:
+            chain_iter = iter(self._chains)
+            f, filename = next(chain_iter)
+            print("loading first chain ({})... ".format(filename), end="")
+            sys.stdout.flush()
+            chain = self.load_chain(f)
+            print("ok.")
+            for f, filename in chain_iter:
+                print("loading {}... ".format(filename), end="")
+                sys.stdout.flush()
+                next_chain = self.load_chain(f)
+                print("ok.")
+
+                print("merging {}... ".format(filename), end="")
+                sys.stdout.flush()
+                chain += next_chain
+                print("ok.")
+                del next_chain
+
+            print("writing output ({})... ".format(self._outfile), end="")
+            sys.stdout.flush()
+            pickle.dump(chain, outf)
+            outf.flush()
+            print("ok.")
 
 if __name__ == "__main__":
     import MarkovChain
@@ -139,6 +181,21 @@ if __name__ == "__main__":
         action="store_true",
         help="""Initializes the chain to the fixed zeroth state, giving
         a fixed start for the text."""
+    )
+
+    merge_parser = subparsers.add_parser(
+        "merge",
+        help="Merge two or more chains together"
+    )
+    merge_parser.set_defaults(cls=Merge)
+    merge_parser.add_argument(
+        "outfile",
+        help="File to write the merged chains to"
+    )
+    merge_parser.add_argument(
+        "chains",
+        nargs="+",
+        help="Source files to load and merge together"
     )
 
     args = parser.parse_args()
