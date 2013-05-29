@@ -21,9 +21,6 @@ class LearnWords:
         self._infile = open(args.infile, "r", encoding=args.encoding)
         self._order = args.order
         self._chainfile = args.chainfile
-        if self._chainfile is None and args.save:
-            print("Chainfile argument omitted, but --no-save is not set.")
-            sys.exit(1)
 
         if args.fold_whitespace:
             self._filter = self.filter_fold_whitespace
@@ -56,9 +53,8 @@ class LearnWords:
         chain.learn(self.source())
         print("done.")
 
-        if self._chainfile is not None:
-            with open(self._chainfile, "wb") as f:
-                pickle.dump(chain, f)
+        with open(self._chainfile, "wb") as f:
+            pickle.dump(chain, f)
 
 class Produce:
     def __init__(self, args):
@@ -100,16 +96,7 @@ if __name__ == "__main__":
     learn_parser.add_argument(
         "chainfile",
         metavar="OUTFILE",
-        default=None,
-        nargs="?",
-        help="File to store the learned data to. Can be omitted if --no-save is set."
-    )
-    learn_parser.add_argument(
-        "--no-save",
-        dest="save",
-        action="store_false",
-        default="True",
-        help="Must be set to omit the chainfile argument"
+        help="File to store the learned data to."
     )
     learn_parser.add_argument(
         "--encoding",
