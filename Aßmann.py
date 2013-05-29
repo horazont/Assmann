@@ -15,7 +15,7 @@ def positive_int(s):
     return i
 
 SOURCES = ('plain', 'gajim')
-def _source_type(str_):
+def source_type(str_):
     if str_ in SOURCES:
         return str_
     else:
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     learn_parser.set_defaults(cls=LearnWords)
     learn_parser.add_argument(
         "--source-type",
-        type=_source_type,
+        type=source_type,
         default='plain',
         metavar="TYPE",
         help="""source type to learn from. Must be one of {}. Defaults to
