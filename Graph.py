@@ -67,6 +67,21 @@ class DirectedWeightedGraph:
 
         return mat
 
+    def __iadd__(self, other):
+        """
+        Merge *other* graph into this one.
+        """
+
+        self.V.union(other.V)
+        for src, dsts in other.E.items():
+            my_dict = self.E.setdefault(src, {})
+            for dst, weight in dsts.items():
+                if dst in my_dict:
+                    my_dict[dst] += weight
+                else:
+                    my_dict[dst] = weight
+        return self
+
     def __str__(self):
         return '{}(V = {}, E = {})'.format(type(self).__name__, str(self.V),
                                            str(self.E))
