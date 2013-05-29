@@ -33,7 +33,7 @@ class MarkovChain:
         self.learn_state = ()
 
     def set_random_state(self):
-        self.state = random.choice(self.states.V)
+        self.state = random.choice(list(self.states.V))
 
     def next_state(self):
         self.time += 1
