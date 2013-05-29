@@ -14,12 +14,30 @@ def positive_int(s):
         raise ValueError("Out of bounds: {}".format(i))
     return i
 
+SOURCES = ('plain', 'gajim')
+def _source_type(str_):
+    if str_ in SOURCES:
+        return str_
+    else:
+        raise argparse.ArgumentTypeError("source type must be one of {}"
+                                         .format(SOURCES1))
+
 class LearnWords:
     pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|\n)"""
 
     def __init__(self, args):
-        self._infile = open(args.infile, "r", encoding=args.encoding)
+        if args.source_type == 'plain':
+            self.source = self.plain_source
+        elif args.source_type == 'gajim':
+            self.source = self.gajim_source
+            if args.jidid:
+                self._jidid = str(args.jidid)
+            else:
+                self._jidid = '*'
+
         self._order = args.order
+        self._infile = args.infile
+        self._encoding = args.encoding
         self._chainfile = args.chainfile
 
         if args.fold_whitespace:
@@ -40,12 +58,28 @@ class LearnWords:
     def filter_pass(x):
         return x
 
-    def source(self):
-        with self._infile as f:
-            yield from map(self._filter,
-                           (m.group(0)
-                            for m in re.finditer(self.pattern, f.read())
-                           ))
+    def filter_text(self, text):
+        """Filter an input text using self.pattern and the global folding
+        settings. Used by both plain_source() and gajim_source().
+        """
+        yield from map(self._filter,
+                       (m.group(0) for m in re.finditer(self.pattern, text)))
+
+
+    def plain_source(self):
+        infile = open(self._infile, "r", encoding=self._encoding)
+        with infile as f:
+            yield from self.filter_text(f.read())
+
+    def gajim_source(self):
+        import sqlite3
+
+        with sqlite3.connect(self._infile) as conn:
+            c = conn.cursor()
+            c.execute('select message from logs where jid_id = ? and kind = 2',
+                      [self._jidid])
+
+            yield from self.filter_text('\n'.join((r[0] for r in c)))
 
     def __call__(self):
         print("learning ... ", end="")
@@ -120,6 +154,7 @@ class Merge:
 
 if __name__ == "__main__":
     import MarkovChain
+
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers()
@@ -129,9 +164,24 @@ if __name__ == "__main__":
     )
     learn_parser.set_defaults(cls=LearnWords)
     learn_parser.add_argument(
+        "--source-type",
+        type=_source_type,
+        default='plain',
+        metavar="TYPE",
+        help="""source type to learn from. Must be one of {}. Defaults to
+        'plain'.""".format(SOURCES)
+    )
+    learn_parser.add_argument(
         "infile",
         metavar="INFILE",
-        help="File to learn from. Must be plaintext"
+        help="""File to learn from. Must be plaintext or a gajim DB
+        (when called with --source gajim)."""
+    )
+    learn_parser.add_argument(
+        "--jidid",
+        metavar="JIDID",
+        type=positive_int,
+        help="Only learn messages from this jid_id from gajim logs."
     )
     learn_parser.add_argument(
         "order",
