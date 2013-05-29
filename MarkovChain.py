@@ -80,3 +80,14 @@ class MarkovChain:
 
         self.learn_state = tuple(state)
 
+    def __iadd__(self, other):
+        if self.order != other.order:
+            raise ValueError(
+                "Cannot merge chains of different order ({} != {})".format(
+                    self.order,
+                    other.order
+                ))
+
+        # FIXME: handle time and current state etc.
+        self.states += other.states
+        return self
