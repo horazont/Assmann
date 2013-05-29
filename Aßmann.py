@@ -61,6 +61,8 @@ class Produce:
         with open(args.chainfile, "rb") as f:
             self._chain = pickle.load(f)
         self._units = args.units
+        if not args.fixed_state:
+            self._chain.set_random_state()
 
     def __call__(self):
         iterable = self._chain.emit()
@@ -129,6 +131,13 @@ if __name__ == "__main__":
         metavar="NUMBER",
         type=positive_int,
         help="Produce NUMBER units of output"
+    )
+    produce_parser.add_argument(
+        "--fixed-state",
+        default=False,
+        action="store_true",
+        help="""Initializes the chain to the fixed zeroth state, giving
+        a fixed start for the text."""
     )
 
     args = parser.parse_args()
