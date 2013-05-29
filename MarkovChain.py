@@ -45,12 +45,13 @@ class MarkovChain:
             self.state = None
 
     def emit(self):
-        self.next_state()
+        while True:
+            self.next_state()
 
-        if self.state is None:
-            raise StopIteration
+            if self.state is None:
+                raise StopIteration
 
-        yield self.state[-1]
+            yield self.state[-1]
 
     def add_transition(self, src, dst):
         """Add a state transition into the state graph.
