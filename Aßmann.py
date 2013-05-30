@@ -20,7 +20,7 @@ def source_type(str_):
         return str_
     else:
         raise argparse.ArgumentTypeError("source type must be one of {}"
-                                         .format(SOURCES1))
+                                         .format(SOURCES))
 
 class LearnWords:
     pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|\n)"""
