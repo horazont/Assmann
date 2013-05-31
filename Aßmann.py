@@ -112,14 +112,10 @@ class LearnWords:
         if self._folder:
             m = m.get_folder(self._folder)
 
-        for k in m.iteritems():
-            for i in self.get_plaintext_parts(k[1]):
-                orig_enc = i.get_content_charset()
-                enc = get_encoding(orig_enc)
-                content_bytes = i.get_payload(decode=True)
-                print("----------------------------------")
-                print("enc: orig: {} chosen: {}".format(orig_enc, enc))
-                print("len: {}".format(len(content_bytes)))
+        for mail in m.iteritems():
+            for part in self.get_plaintext_parts(k[1]):
+                enc = get_encoding(part.get_content_charset())
+                content_bytes = part.get_payload(decode=True)
                 print(content_bytes.decode(encoding=enc, errors='ignore'))
 
         sys.exit()
