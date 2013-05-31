@@ -96,6 +96,10 @@ class LearnWords:
         import codecs
 
         def get_encoding(enc, default='latin1'):
+            """Return *enc* if *enc* is a valid encoding,
+               *default* otherwise.
+            """
+
             if not enc:
                 return default
             try:
