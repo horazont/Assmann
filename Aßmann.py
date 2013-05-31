@@ -91,6 +91,35 @@ class LearnWords:
 
             yield from self.filter_text('\n'.join((r[0] for r in c)))
 
+    def maildir_source(self):
+        from mailbox import Maildir
+        import codecs
+
+        def get_encoding(enc, default='latin1'):
+            if not enc:
+                return default
+            try:
+                codecs.lookup(enc)
+                return enc
+            except LookupError:
+                return default
+
+        m = Maildir(self._infile, create=False)
+        if self._folder:
+            m = m.get_folder(self._folder)
+
+        for k in m.iteritems():
+            for i in self.get_plaintext_parts(k[1]):
+                orig_enc = i.get_content_charset()
+                enc = get_encoding(orig_enc)
+                content_bytes = i.get_payload(decode=True)
+                print("----------------------------------")
+                print("enc: orig: {} chosen: {}".format(orig_enc, enc))
+                print("len: {}".format(len(content_bytes)))
+                print(content_bytes.decode(encoding=enc, errors='ignore'))
+
+        sys.exit()
+
     @classmethod
     def get_plaintext_parts(cls, msg):
         """Recursively retrieve plain text message parts from a Message
