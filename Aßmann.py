@@ -92,6 +92,24 @@ class LearnWords:
 
             yield from self.filter_text('\n'.join((r[0] for r in c)))
 
+    @classmethod
+    def get_plaintext_parts(cls, msg):
+        """Recursively retrieve plain text message parts from a Message
+           instance.
+        """
+
+        if msg.is_multipart():
+            ret = []
+            for payload in msg.get_payload():
+                ret += cls.get_plaintext_parts(payload)
+            return ret
+        else:
+            if msg.get_content_type() == "text/plain":
+                return [str(msg.get_payload())]
+            else:
+                return []
+
+
     def __call__(self):
         print("learning ... ", end="")
         sys.stdout.flush()
