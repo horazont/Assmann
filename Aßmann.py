@@ -33,7 +33,9 @@ class LearnWords:
             if args.jidid:
                 self._jidid = str(args.jidid)
             else:
-                self._jidid = '*'
+                self._jidid = None
+
+            self._contact_name = args.contact_name
 
         self._order = args.order
         self._infile = args.infile
@@ -76,8 +78,18 @@ class LearnWords:
 
         with sqlite3.connect(self._infile) as conn:
             c = conn.cursor()
-            c.execute('select message from logs where jid_id = ? and kind = 2',
-                      [self._jidid])
+
+            fragment = ''
+            data = [self._jidid]
+            print(self._contact_name)
+            if self._contact_name:
+                fragment = 'and contact_name = ?'
+                data.append(self._contact_name)
+
+            query = ( "select message from logs where jid_id = ? {} and "
+                      "kind = 2" ).format(fragment)
+
+            c.execute(query, data)
 
             yield from self.filter_text('\n'.join((r[0] for r in c)))
 
@@ -182,6 +194,11 @@ if __name__ == "__main__":
         metavar="JIDID",
         type=positive_int,
         help="Only learn messages from this jid_id from gajim logs."
+    )
+    learn_parser.add_argument(
+        "--contact-name",
+        metavar="NAME",
+        help="Only learn messages from this contact_name from gajim logs."
     )
     learn_parser.add_argument(
         "order",
