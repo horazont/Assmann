@@ -81,7 +81,6 @@ class LearnWords:
 
             fragment = ''
             data = [self._jidid]
-            print(self._contact_name)
             if self._contact_name:
                 fragment = 'and contact_name = ?'
                 data.append(self._contact_name)
