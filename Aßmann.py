@@ -99,15 +99,11 @@ class LearnWords:
         """
 
         if msg.is_multipart():
-            ret = []
             for payload in msg.get_payload():
-                ret += cls.get_plaintext_parts(payload)
-            return ret
+                yield from cls.get_plaintext_parts(payload)
         else:
             if msg.get_content_type() == "text/plain":
-                return [str(msg.get_payload())]
-            else:
-                return []
+                yield str(msg.get_payload())
 
 
     def __call__(self):
