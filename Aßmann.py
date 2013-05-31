@@ -14,7 +14,7 @@ def positive_int(s):
         raise ValueError("Out of bounds: {}".format(i))
     return i
 
-SOURCES = ('plain', 'gajim')
+SOURCES = ('plain', 'gajim', 'maildir')
 def source_type(str_):
     if str_ in SOURCES:
         return str_
@@ -30,12 +30,11 @@ class LearnWords:
             self.source = self.plain_source
         elif args.source_type == 'gajim':
             self.source = self.gajim_source
-            if args.jidid:
-                self._jidid = str(args.jidid)
-            else:
-                self._jidid = None
-
+            self._jidid = args.jidid
             self._contact_name = args.contact_name
+        elif args.source_type == 'maildir':
+            self.source = self.maildir_source
+            self._folder = args.folder
 
         self._order = args.order
         self._infile = args.infile
@@ -80,7 +79,7 @@ class LearnWords:
             c = conn.cursor()
 
             fragment = ''
-            data = [self._jidid]
+            data = [str(self._jidid)]
             if self._contact_name:
                 fragment = 'and contact_name = ?'
                 data.append(self._contact_name)
@@ -206,12 +205,20 @@ if __name__ == "__main__":
         "--jidid",
         metavar="JIDID",
         type=positive_int,
+        default=None,
         help="Only learn messages from this jid_id from gajim logs."
     )
     learn_parser.add_argument(
         "--contact-name",
         metavar="NAME",
+        default=None,
         help="Only learn messages from this contact_name from gajim logs."
+    )
+    learn_parser.add_argument(
+        "--folder",
+        metavar="FOLDER",
+        default=None,
+        help="Specify subfolder when learning from maildir."
     )
     learn_parser.add_argument(
         "order",
