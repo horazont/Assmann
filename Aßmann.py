@@ -112,13 +112,12 @@ class LearnWords:
         if self._folder:
             m = m.get_folder(self._folder)
 
-        for mail in m.iteritems():
-            for part in self.get_plaintext_parts(k[1]):
+        for _, msg in m.iteritems():
+            for part in self.get_plaintext_parts(msg):
                 enc = get_encoding(part.get_content_charset())
                 content_bytes = part.get_payload(decode=True)
-                print(content_bytes.decode(encoding=enc, errors='ignore'))
-
-        sys.exit()
+                content = content_bytes.decode(encoding=enc, errors='ignore')
+                yield from self.filter_text(content)
 
     @classmethod
     def get_plaintext_parts(cls, msg):
