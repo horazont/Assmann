@@ -102,7 +102,7 @@ class LearnWords:
                 yield from cls.get_plaintext_parts(payload)
         else:
             if msg.get_content_type() == "text/plain":
-                yield msg.get_payload()
+                yield msg
 
 
     def __call__(self):
