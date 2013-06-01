@@ -23,7 +23,7 @@ def source_type(str_):
                                          .format(SOURCES))
 
 class LearnWords:
-    pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|:|/|@|-|\n)"""
+    pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|:|;|/|@|-|\n)"""
 
     def __init__(self, args):
         if args.source_type == 'plain':
