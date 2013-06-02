@@ -227,7 +227,7 @@ if __name__ == "__main__":
         "infile",
         metavar="INFILE",
         help="""File to learn from. Must be plaintext or a gajim DB
-        (when called with --source gajim)."""
+        (when called with --source-type gajim)."""
     )
     learn_parser.add_argument(
         "--jidid",
