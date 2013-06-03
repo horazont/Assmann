@@ -14,16 +14,10 @@ def positive_int(s):
         raise ValueError("Out of bounds: {}".format(i))
     return i
 
-SOURCES = ('plain', 'gajim', 'maildir')
-def source_type(str_):
-    if str_ in SOURCES:
-        return str_
-    else:
-        raise argparse.ArgumentTypeError("source type must be one of {}"
-                                         .format(SOURCES))
 
 class LearnWords:
     pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|:|;|/|@|-|\n)"""
+    SOURCES = ('plain', 'gajim', 'maildir')
 
     def __init__(self, args):
         if args.source_type == 'plain':
@@ -217,11 +211,11 @@ if __name__ == "__main__":
     learn_parser.set_defaults(cls=LearnWords)
     learn_parser.add_argument(
         "--source-type",
-        type=source_type,
+        choices=LearnWords.SOURCES,
         default='plain',
         metavar="TYPE",
         help="""source type to learn from. Must be one of {}. Defaults to
-        'plain'.""".format(SOURCES)
+        'plain'.""".format(LearnWords.SOURCES)
     )
     learn_parser.add_argument(
         "infile",
