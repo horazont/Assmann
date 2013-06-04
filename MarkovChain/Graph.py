@@ -1,6 +1,6 @@
 import abc
 
-class AbstractMarkovGraph:
+class AbstractMarkovGraph(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def add_transition(self, src, dst):
         """
@@ -20,4 +20,12 @@ class AbstractMarkovGraph:
 
     @abc.abstractmethod
     def __iadd__(self, other):
+        pass
+
+    @abc.abstractclassmethod
+    def open(cls, url):
+        pass
+
+    @abc.abstractmethod
+    def flush(self):
         pass
