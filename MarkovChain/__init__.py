@@ -39,7 +39,8 @@ class MarkovChain:
     @graph.setter
     def graph(self, value):
         if not isinstance(value, AbstractMarkovGraph):
-            raise TypeError("graph must implement AbstractMarkovGraph interface.")
+            raise TypeError("graph must implement AbstractMarkovGraph "
+                            "interface. Got: {}".format(value))
         self._graph = value
 
     def set_random_state(self):
