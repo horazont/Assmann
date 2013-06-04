@@ -5,6 +5,7 @@ import random
 import itertools
 import collections
 import copy
+import abc
 
 import numpy as np
 
@@ -15,29 +16,58 @@ def weighted_choice(choices, weights):
     rand = random.random() * cum[-1]
     return choices[bisect.bisect(cum, rand)]
 
+class AbstractMarkovGraph:
+    @abc.abstractmethod
+    def add_transition(self, src, dst):
+        """
+        Add a state transition into the state graph.
 
-class CharacterSet(list):
-    def __pow__(self, other):
-        return type(self)(itertools.product(self, repeat=other))
+        This will add edges with weight 1 or increase the weight if the edge
+        already exists.
+        """
 
+    @abc.abstractmethod
+    def get_weighted_transitions(self, src):
+        pass
+
+    @abc.abstractmethod
+    def get_random_state(self, random_choice=None):
+        pass
+
+    @abc.abstractmethod
+    def __iadd__(self, other):
+        pass
+
+class NativeMarkovGraph(AbstractMarkovGraph, DirectedWeightedGraph):
+    def add_transition(self, src, dst):
+        self.add_vertex(src)
+        self.add_vertex(dst)
+        self.add_edge(src, dst, 1)
+
+    def get_weighted_transitions(self, src):
+        return self.get_edges_at(src)
+
+    def get_random_state(self, random_choice=None):
+        random_choice = random_choice or random.choice
+        return random_choice(list(self.V))
 
 class MarkovChain:
     """A Markov source of order n.
     """
 
-    def __init__(self, order, debug=False):
+    def __init__(self, order, debug=False, graph=None):
         self.order = int(order)
         self.time = 0
-        self.states = DirectedWeightedGraph()
+        self.graph = graph or NativeMarkovGraph()
         self.state = ()
         self.learn_state = ()
 
     def set_random_state(self):
-        self.state = random.choice(list(self.states.V))
+        self.state = self.graph.get_random_state()
 
     def next_state(self):
         self.time += 1
-        cands = list(self.states.get_edges_at(self.state))
+        cands = list(self.graph.get_weighted_transitions(self.state))
         if len(cands) > 0:
             edge = weighted_choice(cands, [c[1] for c in cands])
             self.state, _ = edge
@@ -53,16 +83,6 @@ class MarkovChain:
 
             yield self.state[-1]
 
-    def add_transition(self, src, dst):
-        """Add a state transition into the state graph.
-
-        This will add edges with weight 1 or increase the weight if the edge
-        already exists.
-        """
-        self.states.add_vertex(src)
-        self.states.add_vertex(dst)
-        self.states.add_edge(src, dst, 1)
-
     def learn(self, source):
         """Build a markov model from an iterable input source.
         """
@@ -76,7 +96,7 @@ class MarkovChain:
             state.append(i)
 
             # FIXME how to handle the start case?
-            self.add_transition(oldstate, tuple(state))
+            self.graph.add_transition(oldstate, tuple(state))
 
         self.learn_state = tuple(state)
 
@@ -89,5 +109,5 @@ class MarkovChain:
                 ))
 
         # FIXME: handle time and current state etc.
-        self.states += other.states
+        self.graph += other.graph
         return self
