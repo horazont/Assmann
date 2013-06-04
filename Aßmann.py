@@ -8,6 +8,8 @@ import operator
 
 import argparse
 
+import MarkovChain
+
 def positive_int(s):
     i = int(s)
     if i <= 0:
@@ -134,13 +136,12 @@ class LearnWords:
         chain.learn(self.source())
         print("done.")
 
-        with open(self._chainfile, "wb") as f:
-            pickle.dump(chain, f)
+        chain.graph.flush(url=self._chainfile)
 
 class Produce:
     def __init__(self, args):
-        with open(args.chainfile, "rb") as f:
-            self._chain = pickle.load(f)
+        graph = MarkovChain.NativeMarkovGraph.open(args.chainfile)
+        self._chain = MarkovChain.MarkovChain(graph.order, graph=graph)
         self._units = args.units
         if not args.fixed_state:
             self._chain.set_random_state()

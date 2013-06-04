@@ -1,13 +1,16 @@
 import random
 import urllib.request
 import urllib.parse
+import pickle
 
 import Graph
 
 import MarkovChain.Graph
 
 def path_or_die(url):
-    parsed = urllib.parse.urlparse(url, scheme='file')
+    parsed = urllib.parse.urlparse(url,
+                                   scheme="file",
+                                   allow_fragments=False)
     if parsed.scheme != "file":
         raise ValueError("A file:// URL is required.")
     if parsed.netloc != "":
@@ -38,17 +41,34 @@ class NativeMarkovGraph(Graph.DirectedWeightedGraph,
         random_choice = random_choice or random.choice
         return random_choice(list(self.V))
 
+    @classmethod
     def open(cls, url):
-        with urllib.request.urlopen(url) as f:
-            obj = pickle.load(f)
+        try:
+            path = path_or_die(url)
+        except ValueError:
+            with urllib.request.urlopen(url) as f:
+                obj = pickle.load(f)
+        else:
+            with open(path, "rb") as f:
+                obj = pickle.load(f)
+
         if not isinstance(obj, cls):
             raise TypeError(
                 "Unexpected type came out of the pickle! {}".format(
                     type(obj)))
-        self._url = url
+        obj._url = url
         return obj
 
-    def flush(self):
-        path = path_or_die(self._url)
+    def flush(self, url=None):
+        if url is None:
+            url = self._url
+
+        path = path_or_die(url)
         with open(path, "wb") as f:
             pickle.dump(self, f)
+        if url is not None:
+            self._url = url
+
+    @property
+    def order(self):
+        return len(next(iter(self.V)))

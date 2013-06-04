@@ -8,6 +8,7 @@ import copy
 
 import numpy as np
 
+from MarkovChain.Graph import AbstractMarkovGraph
 from MarkovChain.NativeGraph import NativeMarkovGraph
 
 try:
@@ -31,6 +32,16 @@ class MarkovChain:
         self.graph = graph or NativeMarkovGraph()
         self.state = ()
         self.learn_state = ()
+
+    @property
+    def graph(self):
+        return self._graph
+
+    @graph.setter
+    def graph(self, value):
+        if not isinstance(value, AbstractMarkovGraph):
+            raise TypeError("graph must implement AbstractMarkovGraph interface.")
+        self._graph = value
 
     def set_random_state(self):
         self.state = self.graph.get_random_state()

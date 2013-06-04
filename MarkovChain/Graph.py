@@ -29,3 +29,7 @@ class AbstractMarkovGraph(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def flush(self):
         pass
+
+    @abc.abstractproperty
+    def order(self):
+        pass
