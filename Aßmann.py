@@ -5,8 +5,8 @@ import sys
 import pickle
 import functools
 import operator
-
 import argparse
+import urllib.parse
 
 import MarkovChain
 
@@ -45,6 +45,17 @@ class LearnWords:
         if args.fold_case:
             old_filter = self._filter
             self._filter = lambda x: str.lower(old_filter(x))
+
+    @staticmethod
+    def backend_by_url(url, order):
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme == "file":
+            return MarkovChain.NativeMarkovGraph(order)
+        else:
+            try:
+                return MarkovChain.SQLMarkovGraph(order, url, debug=True)
+            except AttributeError:
+                return None
 
     @staticmethod
     def filter_fold_whitespace(x):
@@ -132,7 +143,8 @@ class LearnWords:
     def __call__(self):
         print("learning ... ", end="")
         sys.stdout.flush()
-        chain = MarkovChain.MarkovChain(MarkovChain.NativeMarkovGraph(self._order))
+        graph = self.backend_by_url(self._chainfile, self._order)
+        chain = MarkovChain.MarkovChain(graph)
         chain.learn(self.source())
         print("done.")
 
