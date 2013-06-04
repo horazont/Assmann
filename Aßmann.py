@@ -53,9 +53,10 @@ class LearnWords:
             return MarkovChain.NativeMarkovGraph(order)
         else:
             try:
-                return MarkovChain.SQLMarkovGraph(order, url, debug=True)
+                graph_cls = MarkovChain.SQLMarkovGraph
             except AttributeError:
                 return None
+            return graph_cls(order, url)
 
     @staticmethod
     def filter_fold_whitespace(x):
