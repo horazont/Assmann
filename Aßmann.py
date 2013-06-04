@@ -7,6 +7,7 @@ import functools
 import operator
 import argparse
 import urllib.parse
+import urllib.error
 
 import MarkovChain
 
@@ -153,11 +154,27 @@ class LearnWords:
 
 class Produce:
     def __init__(self, args):
-        graph = MarkovChain.NativeMarkovGraph.open(args.chainfile)
+        graph = self.backend_by_url(args.chainfile)
         self._chain = MarkovChain.MarkovChain(graph)
         self._units = args.units
         if not args.fixed_state:
             self._chain.set_random_state()
+
+    @staticmethod
+    def backend_by_url(url):
+        try:
+            parsed = urllib.parse.urlparse(url)
+        except urllib.error.URLError:
+            return MarkovChain.NativeMarkovGraph.open(url)
+
+        if parsed.scheme in {"http", "file", "https", "ftp"}:
+            return MarkovChain.NativeMarkovGraph.open(url)
+        else:
+            try:
+                graph_cls = MarkovChain.SQLMarkovGraph
+            except AttributeError:
+                return None
+            return graph_cls(None, url, debug=False)
 
     def __call__(self):
         iterable = self._chain.emit()
