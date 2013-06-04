@@ -69,7 +69,8 @@ class LearnWords:
         return x
 
     def filter_text(self, text):
-        """Filter an input text using self.pattern and the global folding
+        """
+        Filter an input text using self.pattern and the global folding
         settings. Used by both plain_source() and gajim_source().
         """
         yield from map(self._filter,
@@ -105,8 +106,9 @@ class LearnWords:
         import codecs
 
         def get_encoding(enc, default='latin1'):
-            """Return *enc* if *enc* is a valid encoding,
-               *default* otherwise.
+            """
+            Return *enc* if *enc* is a valid encoding,
+            *default* otherwise.
             """
 
             if not enc:
@@ -130,8 +132,9 @@ class LearnWords:
 
     @classmethod
     def get_plaintext_parts(cls, msg):
-        """Recursively retrieve plain text message parts from a Message
-           instance.
+        """
+        Recursively retrieve plain text message parts from a Message
+        instance.
         """
 
         if msg.is_multipart():
