@@ -5,51 +5,21 @@ import random
 import itertools
 import collections
 import copy
-import abc
 
 import numpy as np
 
-from Graph import DirectedWeightedGraph
+from MarkovChain.NativeGraph import NativeMarkovGraph
+
+try:
+    from MarkovChain.SQLGraph import SQLMarkovGraph
+except ImportError:
+    pass
 
 def weighted_choice(choices, weights):
     cum = np.add.accumulate(weights)
     rand = random.random() * cum[-1]
     return choices[bisect.bisect(cum, rand)]
 
-class AbstractMarkovGraph:
-    @abc.abstractmethod
-    def add_transition(self, src, dst):
-        """
-        Add a state transition into the state graph.
-
-        This will add edges with weight 1 or increase the weight if the edge
-        already exists.
-        """
-
-    @abc.abstractmethod
-    def get_weighted_transitions(self, src):
-        pass
-
-    @abc.abstractmethod
-    def get_random_state(self, random_choice=None):
-        pass
-
-    @abc.abstractmethod
-    def __iadd__(self, other):
-        pass
-
-class NativeMarkovGraph(AbstractMarkovGraph, DirectedWeightedGraph):
-    def add_transition(self, src, dst):
-        self.add_vertex(src)
-        self.add_vertex(dst)
-        self.add_edge(src, dst, 1)
-
-    def get_weighted_transitions(self, src):
-        return self.get_edges_at(src)
-
-    def get_random_state(self, random_choice=None):
-        random_choice = random_choice or random.choice
-        return random_choice(list(self.V))
 
 class MarkovChain:
     """A Markov source of order n.
