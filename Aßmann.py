@@ -132,7 +132,7 @@ class LearnWords:
     def __call__(self):
         print("learning ... ", end="")
         sys.stdout.flush()
-        chain = MarkovChain.MarkovChain(self._order)
+        chain = MarkovChain.MarkovChain(MarkovChain.NativeMarkovGraph(self._order))
         chain.learn(self.source())
         print("done.")
 
@@ -141,7 +141,7 @@ class LearnWords:
 class Produce:
     def __init__(self, args):
         graph = MarkovChain.NativeMarkovGraph.open(args.chainfile)
-        self._chain = MarkovChain.MarkovChain(graph.order, graph=graph)
+        self._chain = MarkovChain.MarkovChain(graph)
         self._units = args.units
         if not args.fixed_state:
             self._chain.set_random_state()

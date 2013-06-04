@@ -25,11 +25,19 @@ class NativeMarkovGraph(Graph.DirectedWeightedGraph,
     Uses DirectedWeightedGraph from Graph to implement a markov graph.
     """
 
-    def __init__(self):
+    def __init__(self, order):
         super().__init__()
+        assert order > 0
+        self._order = order
         self._url = None
 
     def add_transition(self, src, dst):
+        if len(src) != len(dst) or len(src) != self._order:
+            raise ValueError("src ({}) and/or dst ({}) doesn't adhere "
+                             "to given order of {}".format(
+                                src,
+                                dst,
+                                self._order))
         self.add_vertex(src)
         self.add_vertex(dst)
         self.add_edge(src, dst, 1)
@@ -40,6 +48,16 @@ class NativeMarkovGraph(Graph.DirectedWeightedGraph,
     def get_random_state(self, random_choice=None):
         random_choice = random_choice or random.choice
         return random_choice(list(self.V))
+
+    def __iadd__(self, other):
+        if self.order != other.order:
+            raise ValueError(
+                "Cannot merge chains of different order ({} != {})".format(
+                    self.order,
+                    other.order
+                ))
+
+        return super().__iadd__(self, other)
 
     @classmethod
     def open(cls, url):
@@ -71,4 +89,4 @@ class NativeMarkovGraph(Graph.DirectedWeightedGraph,
 
     @property
     def order(self):
-        return len(next(iter(self.V)))
+        return self._order

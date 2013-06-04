@@ -26,12 +26,11 @@ class MarkovChain:
     """A Markov source of order n.
     """
 
-    def __init__(self, order, debug=False, graph=None):
-        self.order = int(order)
+    def __init__(self, graph, debug=False):
         self.time = 0
-        self.graph = graph or NativeMarkovGraph()
+        self.graph = graph
         self.state = ()
-        self.learn_state = ()
+        self.learn_state = (None,) * graph.order
 
     @property
     def graph(self):
@@ -71,7 +70,7 @@ class MarkovChain:
         for i in source:
             oldstate = tuple(state)
 
-            if len(oldstate) == self.order:
+            if len(oldstate) == self.graph.order:
                 state.popleft()
 
             state.append(i)
@@ -82,13 +81,6 @@ class MarkovChain:
         self.learn_state = tuple(state)
 
     def __iadd__(self, other):
-        if self.order != other.order:
-            raise ValueError(
-                "Cannot merge chains of different order ({} != {})".format(
-                    self.order,
-                    other.order
-                ))
-
         # FIXME: handle time and current state etc.
         self.graph += other.graph
         return self
