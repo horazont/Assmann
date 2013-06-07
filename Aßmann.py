@@ -61,7 +61,8 @@ class LearnWords:
 
     @staticmethod
     def filter_fold_whitespace(x):
-        x = x.replace("\t", " ").strip()
+        nl = "\n" if x.endswith("\n") else ""
+        x = x.replace("\t", " ").strip() + nl
         return x if x else " "
 
     @staticmethod
