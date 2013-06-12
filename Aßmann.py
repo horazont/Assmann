@@ -50,7 +50,7 @@ class LearnWords:
     @staticmethod
     def backend_by_url(url, order):
         parsed = urllib.parse.urlparse(url)
-        if parsed.scheme == "file":
+        if parsed.scheme in ("file", ""):
             return MarkovChain.NativeMarkovGraph(order)
         else:
             try:
@@ -166,12 +166,9 @@ class Produce:
 
     @staticmethod
     def backend_by_url(url):
-        try:
-            parsed = urllib.parse.urlparse(url)
-        except urllib.error.URLError:
-            return MarkovChain.NativeMarkovGraph.open(url)
+        parsed = urllib.parse.urlparse(url)
 
-        if parsed.scheme in {"http", "file", "https", "ftp"}:
+        if parsed.scheme in {"http", "file", "https", "ftp", ""}:
             return MarkovChain.NativeMarkovGraph.open(url)
         else:
             try:
