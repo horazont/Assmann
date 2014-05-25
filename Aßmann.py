@@ -16,8 +16,8 @@ def positive_int(s):
 
 
 class LearnWords:
-    pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|:|;|/|@|-|\n)"""
-    SOURCES = ('plain', 'gajim', 'maildir')
+    pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|:|;|/|@|-|\n|\{|\})"""
+    SOURCES = ('plain', 'gajim', 'maildir', 'irclog')
 
     def __init__(self, args):
         if args.source_type == 'plain':
@@ -29,6 +29,8 @@ class LearnWords:
         elif args.source_type == 'maildir':
             self.source = self.maildir_source
             self._folder = args.folder
+        elif args.source_type == 'irclog':
+            self.source = self.irclog_source
 
         self._order = args.order
         self._infile = args.infile
@@ -112,6 +114,21 @@ class LearnWords:
                 content_bytes = part.get_payload(decode=True)
                 content = content_bytes.decode(encoding=enc, errors='ignore')
                 yield from self.filter_text(content)
+
+    def irclog_source(self):
+        irclog_msgline = re.compile(r"[0-9:]+ <(.[^>]+)> (.*)")
+        irclog_actionline = re.compile(r"[0-9:]+ \* ([^ ]+) (.*)")
+        with open(self._infile, "r") as f:
+            for line in f:
+                m = irclog_msgline.match(line)
+                if m:
+                    yield "<" + m.group(1) + "> "
+                    yield from self.filter_text(m.group(2) + "\n")
+                    continue
+                m = irclog_actionline.match(line)
+                if m:
+                    yield m.group(1) + " "
+                    yield from self.filter_text(m.group(2) + "\n")
 
     @classmethod
     def get_plaintext_parts(cls, msg):
