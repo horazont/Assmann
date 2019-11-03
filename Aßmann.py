@@ -157,12 +157,15 @@ class LearnWords:
         chain.graph.flush(url=self._chainfile)
 
 class Produce:
+    WORD_RE = re.compile("^\w+$")
+
     def __init__(self, args):
         graph = self.backend_by_url(args.chainfile)
         self._chain = MarkovChain.MarkovChain(graph)
         self._units = args.units
         if not args.fixed_state:
             self._chain.set_random_state()
+        self._insert_spaces = args.insert_spaces
 
     @staticmethod
     def backend_by_url(url):
@@ -177,11 +180,18 @@ class Produce:
                 return None
             return graph_cls(None, url, debug=False)
 
+    @classmethod
+    def is_word(cls, x):
+        return cls.WORD_RE.match(x) is not None
+
     def __call__(self):
         iterable = self._chain.emit()
         try:
             for i in range(self._units):
-                print(next(iterable), end="")
+                token = next(iterable)
+                if self._insert_spaces and self.is_word(token):
+                    print(" ", end="")
+                print(token, end="")
         except StopIteration:
             pass
         print()
@@ -322,6 +332,11 @@ if __name__ == "__main__":
         action="store_true",
         help="""Initializes the chain to the fixed zeroth state, giving
         a fixed start for the text."""
+    )
+    produce_parser.add_argument(
+        "--insert-spaces",
+        action="store_true",
+        default=False,
     )
 
     merge_parser = subparsers.add_parser(
