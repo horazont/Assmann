@@ -20,11 +20,14 @@ def positive_int(s):
 
 class LearnWords:
     pattern = """(\w+|\s+|,|\.|\?|!|"|'|\[|\]|\(|\)|:|;|/|@|-|\n)"""
-    SOURCES = ('plain', 'gajim', 'maildir')
+    token_pattern = "\w+|[^\w\s]+"
+    SOURCES = ('plain', 'gajim', 'maildir', 'plain2')
 
     def __init__(self, args):
         if args.source_type == 'plain':
             self.source = self.plain_source
+        elif args.source_type == 'plain2':
+            self.source = self.plain2_source
         elif args.source_type == 'gajim':
             self.source = self.gajim_source
             self._jidid = args.jidid
@@ -77,11 +80,24 @@ class LearnWords:
         yield from map(self._filter,
                        (m.group(0) for m in re.finditer(self.pattern, text)))
 
+    def filter_text2(self, text):
+        """
+        Filter an input text using self.pattern and the global folding
+        settings. Used by both plain_source() and gajim_source().
+        """
+        for token in re.finditer(self.token_pattern, text):
+            yield self._filter(token.group(0))
+
 
     def plain_source(self):
         infile = open(self._infile, "r", encoding=self._encoding)
         with infile as f:
             yield from self.filter_text(f.read())
+
+    def plain2_source(self):
+        infile = open(self._infile, "r", encoding=self._encoding)
+        with infile as f:
+            yield from self.filter_text2(f.read())
 
     def gajim_source(self):
         import sqlite3
